@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LoomGuard — Predict. Prevent. Perform.</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0b0f;
+  --bg2: #111318;
+  --bg3: #191c24;
+  --bg4: #1f2330;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #e8eaf0;
+  --text2: #8b90a0;
+  --text3: #555a6a;
+  --purple: rgb(120,100,255);
+  --purple2: rgb(90,70,220);
+  --purple-dim: rgba(120,100,255,0.12);
+  --green: rgb(50,210,130);
+  --green-dim: rgba(50,210,130,0.12);
+  --amber: rgb(255,180,50);
+  --amber-dim: rgba(255,180,50,0.12);
+  --red: rgb(255,75,80);
+  --red-dim: rgba(255,75,80,0.12);
+  --blue: rgb(60,160,255);
+  --blue-dim: rgba(60,160,255,0.12);
+  --teal: rgb(30,210,200);
+  --teal-dim: rgba(30,210,200,0.1);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 5px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+h1,h2,h3,.mono{font-family:'Space Grotesk',sans-serif}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(10,11,15,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 2rem;height:58px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:10px;cursor:pointer}
+.nav-logo-mark{width:30px;height:30px;background:linear-gradient(135deg,rgb(120,100,255),rgb(60,160,255));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;color:#fff}
+.nav-logo-text{font-size:17px;font-weight:600;font-family:'Space Grotesk',sans-serif;color:var(--text)}
+.nav-logo-text span{color:var(--purple)}
+.nav-center{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)}
+.nav-sep{color:var(--text3);margin:0 2px}
+.nav-crumb{cursor:pointer;padding:4px 8px;border-radius:var(--radius-xs);transition:all 0.15s}
+.nav-crumb:hover{background:var(--bg3);color:var(--text)}
+.nav-crumb.active{color:var(--purple)}
+.nav-right{display:flex;align-items:center;gap:14px}
+.live-badge{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--green);font-weight:500}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse-green 2s infinite}
+@keyframes pulse-green{0%,100%{box-shadow:0 0 0 0 rgba(50,210,130,0.4)}50%{box-shadow:0 0 0 5px rgba(50,210,130,0)}}
+.nav-time{font-size:12px;color:var(--text2);font-family:'Space Grotesk',sans-serif}
+.nav-tabs{display:flex;gap:2px}
+.nav-tab{font-size:13px;padding:5px 12px;border-radius:var(--radius-xs);cursor:pointer;color:var(--text2);transition:all 0.15s;border:none;background:transparent}
+.nav-tab:hover{color:var(--text);background:var(--bg3)}
+.nav-tab.active{color:var(--purple);background:var(--purple-dim)}
+
+/* PAGES */
+.page{display:none;animation:fadeIn 0.25s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.container{max-width:1200px;margin:0 auto;padding:2rem}
+
+/* HOME */
+.home-hero{padding:2.5rem 0 1.5rem;border-bottom:1px solid var(--border);margin-bottom:2rem}
+.home-hero-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem}
+.home-title{font-size:28px;font-weight:700;color:var(--text);line-height:1.2}
+.home-title span{background:linear-gradient(90deg,rgb(120,100,255),rgb(60,160,255));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.home-sub{font-size:14px;color:var(--text2);margin-top:4px}
+.pill-row{display:flex;gap:10px;flex-wrap:wrap}
+.pill{display:flex;align-items:center;gap:7px;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:500;border:1px solid}
+.pill-total{background:var(--bg3);border-color:var(--border2);color:var(--text)}
+.pill-crit{background:var(--red-dim);border-color:rgba(255,75,80,0.3);color:var(--red)}
+.pill-warn{background:var(--amber-dim);border-color:rgba(255,180,50,0.3);color:var(--amber)}
+.pill-good{background:var(--green-dim);border-color:rgba(50,210,130,0.3);color:var(--green)}
+.pill-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+/* CATEGORY CARDS */
+.cat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:2rem}
+.cat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden}
+.cat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--radius) var(--radius) 0 0;transition:opacity 0.2s}
+.cat-card.border-good::before{background:linear-gradient(90deg,var(--green),var(--teal))}
+.cat-card.border-warn::before{background:linear-gradient(90deg,var(--amber),rgb(255,140,50))}
+.cat-card.border-crit::before{background:linear-gradient(90deg,var(--red),rgb(220,50,120))}
+.cat-card:hover{border-color:var(--border2);transform:translateY(-2px);background:var(--bg3)}
+.cat-icon{font-size:36px;margin-bottom:0.75rem;display:block}
+.cat-name{font-size:18px;font-weight:600;color:var(--text);margin-bottom:4px}
+.cat-desc{font-size:13px;color:var(--text2);margin-bottom:1rem;line-height:1.5}
+.cat-footer{display:flex;align-items:center;justify-content:space-between}
+.cat-count{font-size:12px;color:var(--text3);background:var(--bg4);padding:3px 10px;border-radius:10px}
+.cat-status-row{display:flex;gap:10px}
+.cat-status-item{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:500}
+.cat-health-bar{height:4px;background:var(--bg4);border-radius:2px;margin-top:0.85rem;overflow:hidden}
+.cat-health-fill{height:4px;border-radius:2px;transition:width 0.5s ease}
+
+/* ALERTS STRIP */
+.alerts-strip-title{font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:0.75rem}
+.alerts-strip{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px}
+.alerts-strip::-webkit-scrollbar{height:3px}
+.alert-chip{flex-shrink:0;display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid;white-space:nowrap}
+.alert-chip.crit{background:var(--red-dim);border-color:rgba(255,75,80,0.3);color:var(--red)}
+.alert-chip.warn{background:var(--amber-dim);border-color:rgba(255,180,50,0.3);color:var(--amber)}
+
+/* METRIC CARDS */
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
+.metric-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem}
+.metric-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:6px}
+.metric-val{font-size:26px;font-weight:700;font-family:'Space Grotesk',sans-serif;line-height:1}
+.metric-sub{font-size:11px;color:var(--text3);margin-top:4px}
+.metric-val.good{color:var(--green)}
+.metric-val.warn{color:var(--amber)}
+.metric-val.crit{color:var(--red)}
+.metric-val.purple{color:var(--purple)}
+
+/* OVERVIEW CHARTS */
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem}
+.chart-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:1rem}
+.chart-sub{font-size:11px;color:var(--text2);margin-bottom:1rem}
+.chart-wrap{position:relative;width:100%}
+
+/* MACHINE LIST IN OVERVIEW */
+.machine-list-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;margin-bottom:16px}
+.machine-list-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:all 0.15s;border-radius:var(--radius-xs);padding-left:6px;padding-right:6px}
+.machine-list-row:last-child{border-bottom:none}
+.machine-list-row:hover{background:var(--bg3)}
+.m-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.m-info{flex:1}
+.m-name{font-size:13px;font-weight:500;color:var(--text)}
+.m-type{font-size:11px;color:var(--text2)}
+.m-bar-wrap{width:90px;height:5px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.m-bar{height:5px;border-radius:3px}
+.m-pct{font-size:12px;font-weight:600;min-width:34px;text-align:right;font-family:'Space Grotesk',sans-serif}
+
+/* CATEGORY PAGE */
+.cat-page-header{display:flex;align-items:center;gap:1rem;padding:1.5rem 0;border-bottom:1px solid var(--border);margin-bottom:1.5rem}
+.cat-page-icon{font-size:48px}
+.cat-page-title{font-size:24px;font-weight:700;color:var(--text)}
+.cat-page-desc{font-size:14px;color:var(--text2);margin-top:3px}
+.cat-meta-pills{display:flex;gap:8px;margin-top:0.75rem}
+.meta-pill{font-size:12px;padding:4px 12px;border-radius:12px;background:var(--bg3);border:1px solid var(--border);color:var(--text2)}
+
+/* MACHINE CARDS IN CATEGORY */
+.mach-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.mach-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;cursor:pointer;transition:all 0.2s;border-left:3px solid transparent;position:relative}
+.mach-card.good{border-left-color:var(--green)}
+.mach-card.warn{border-left-color:var(--amber)}
+.mach-card.critical{border-left-color:var(--red)}
+.mach-card:hover{background:var(--bg3);transform:translateY(-2px)}
+.mach-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:0.75rem}
+.mach-id{font-size:11px;font-weight:600;background:var(--bg4);padding:3px 8px;border-radius:4px;color:var(--text2);font-family:'Space Grotesk',sans-serif}
+.status-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:10px;text-transform:uppercase;letter-spacing:0.5px}
+.status-badge.good{background:var(--green-dim);color:var(--green)}
+.status-badge.warn{background:var(--amber-dim);color:var(--amber)}
+.status-badge.critical{background:var(--red-dim);color:var(--red);animation:flicker 2s infinite}
+@keyframes flicker{0%,100%{opacity:1}50%{opacity:0.7}}
+.mach-name{font-size:15px;font-weight:600;color:var(--text);margin-bottom:0.5rem}
+.mach-health-big{font-size:32px;font-weight:700;font-family:'Space Grotesk',sans-serif;line-height:1;margin-bottom:0.4rem}
+.mach-bar-wrap{height:6px;background:var(--bg4);border-radius:3px;margin-bottom:0.85rem;overflow:hidden}
+.mach-bar{height:6px;border-radius:3px}
+.sensor-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:0.75rem}
+.sensor-pill{font-size:11px;padding:3px 9px;border-radius:8px;background:var(--bg4);color:var(--text2);font-family:'Space Grotesk',sans-serif}
+.fatigue-row{margin-bottom:0.85rem}
+.fatigue-label{display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:4px}
+.fatigue-bar-wrap{height:5px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.fatigue-bar{height:5px;border-radius:3px}
+.mach-card-footer{display:flex;align-items:center;justify-content:space-between}
+.alert-badge{font-size:11px;background:var(--red-dim);color:var(--red);padding:3px 9px;border-radius:10px;font-weight:500}
+.view-btn{font-size:12px;color:var(--purple);font-weight:500;display:flex;align-items:center;gap:4px}
+
+/* MACHINE DETAIL */
+.mach-detail-header{padding:1.5rem 0;border-bottom:1px solid var(--border);margin-bottom:1.5rem}
+.mach-detail-title-row{display:flex;align-items:center;gap:12px;margin-bottom:0.75rem}
+.mach-detail-title{font-size:24px;font-weight:700;color:var(--text)}
+.info-pills-row{display:flex;gap:8px;flex-wrap:wrap}
+.info-pill{font-size:12px;padding:5px 14px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);display:flex;align-items:center;gap:6px}
+.info-pill strong{color:var(--text);font-weight:500}
+
+/* SENSOR CARDS */
+.sensor-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
+.sensor-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem;position:relative;overflow:hidden}
+.sensor-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px}
+.sensor-card.good::after{background:var(--green)}
+.sensor-card.warn::after{background:var(--amber)}
+.sensor-card.crit::after{background:var(--red)}
+.sensor-card-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:6px}
+.sensor-card-val{font-size:28px;font-weight:700;font-family:'Space Grotesk',sans-serif;line-height:1;margin-bottom:2px}
+.sensor-card-unit{font-size:11px;color:var(--text3);margin-bottom:8px}
+.sensor-card-limit{font-size:11px;color:var(--text2);margin-bottom:8px}
+.sensor-prog-wrap{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.sensor-prog{height:4px;border-radius:2px;transition:width 0.6s ease}
+
+/* SECTIONS */
+.section{margin-bottom:1.5rem}
+.section-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ALERTS LIST */
+.alert-list-item{display:flex;align-items:flex-start;gap:12px;padding:12px;border-radius:var(--radius-sm);margin-bottom:8px;border:1px solid}
+.alert-list-item.crit{background:var(--red-dim);border-color:rgba(255,75,80,0.2)}
+.alert-list-item.warn{background:var(--amber-dim);border-color:rgba(255,180,50,0.2)}
+.alert-list-item.info{background:var(--blue-dim);border-color:rgba(60,160,255,0.2)}
+.alert-icon{font-size:16px;margin-top:1px}
+.alert-text{font-size:13px;font-weight:500}
+.alert-list-item.crit .alert-text{color:var(--red)}
+.alert-list-item.warn .alert-text{color:var(--amber)}
+.alert-list-item.info .alert-text{color:var(--blue)}
+.alert-sub{font-size:11px;color:var(--text2);margin-top:2px}
+.no-alerts{display:flex;align-items:center;gap:10px;padding:14px;background:var(--green-dim);border-radius:var(--radius-sm);border:1px solid rgba(50,210,130,0.2);color:var(--green);font-size:13px;font-weight:500}
+
+/* REC TABLE */
+.rec-table{width:100%;border-collapse:collapse}
+.rec-table th{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.6px;padding:8px 10px;text-align:left;border-bottom:1px solid var(--border)}
+.rec-table td{font-size:13px;padding:10px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top}
+.rec-table td:first-child{color:var(--text)}
+.rec-table tr:last-child td{border-bottom:none}
+.pri-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:8px;text-transform:uppercase;letter-spacing:0.4px;display:inline-block}
+.pri-high{background:var(--red-dim);color:var(--red)}
+.pri-med{background:var(--amber-dim);color:var(--amber)}
+.pri-low{background:var(--green-dim);color:var(--green)}
+
+/* FATIGUE ANALYSIS */
+.fatigue-analysis{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem}
+.fatigue-big-bar{height:20px;background:linear-gradient(90deg,var(--green),var(--amber) 50%,var(--red));border-radius:10px;position:relative;margin:1rem 0;overflow:visible}
+.fatigue-pointer{position:absolute;top:-6px;width:3px;height:32px;background:var(--text);border-radius:2px;transform:translateX(-50%)}
+.fatigue-pointer::after{content:attr(data-val);position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-weight:600;white-space:nowrap}
+.fatigue-zones{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:4px}
+.fatigue-prediction{margin-top:1rem;padding:10px;background:var(--bg3);border-radius:var(--radius-sm);font-size:13px;color:var(--text2);display:flex;align-items:center;gap:8px}
+.fatigue-prediction strong{color:var(--text)}
+
+/* ROI SECTION */
+.roi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
+.roi-card{background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;text-align:center}
+.roi-val{font-size:24px;font-weight:700;font-family:'Space Grotesk',sans-serif;color:var(--green)}
+.roi-label{font-size:11px;color:var(--text2);margin-top:4px}
+.roi-sub{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* BACK BTN */
+.back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text2);cursor:pointer;padding:6px 12px;border-radius:var(--radius-xs);border:1px solid var(--border);background:var(--bg2);transition:all 0.15s;margin-bottom:1rem}
+.back-btn:hover{color:var(--text);border-color:var(--border2)}
+
+/* GLOW EFFECTS */
+.glow-red{box-shadow:0 0 20px rgba(255,75,80,0.15)}
+.glow-green{box-shadow:0 0 20px rgba(50,210,130,0.1)}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo" onclick="goHome()">
+    <div class="nav-logo-mark">LG</div>
+    <div class="nav-logo-text"><span>Loom</span>Guard</div>
+  </div>
+  <div id="breadcrumb" class="nav-center">
+    <span class="nav-crumb active" onclick="goHome()">Plant Floor</span>
+  </div>
+  <div class="nav-right">
+    <div class="nav-tabs">
+      <button class="nav-tab active" id="tab-home" onclick="goHome()">Home</button>
+      <button class="nav-tab" id="tab-overview" onclick="goOverview()">Overview</button>
+    </div>
+    <div class="live-badge"><div class="live-dot"></div>Live</div>
+    <div class="nav-time" id="clock">--:--:--</div>
+  </div>
+</nav>
+
+<!-- HOME PAGE -->
+<div class="page active" id="page-home">
+  <div class="container">
+    <div class="home-hero">
+      <div class="home-hero-top">
+        <div>
+          <h1 class="home-title">Plant Floor<br><span>Machine Monitor</span></h1>
+          <p class="home-sub">Ludhiana Textile Unit — 12 machines across 4 departments</p>
+        </div>
+        <div class="pill-row" id="summary-pills"></div>
+      </div>
+    </div>
+
+    <div class="cat-grid" id="cat-grid"></div>
+
+    <div>
+      <div class="alerts-strip-title">Recent Alerts</div>
+      <div class="alerts-strip" id="alerts-strip"></div>
+    </div>
+  </div>
+</div>
+
+<!-- OVERVIEW PAGE -->
+<div class="page" id="page-overview">
+  <div class="container">
+    <h2 style="font-size:20px;font-weight:700;margin-bottom:1.25rem;color:var(--text)">Fleet Overview</h2>
+    <div class="metric-grid">
+      <div class="metric-card"><div class="metric-label">Active Machines</div><div class="metric-val purple">12<span style="font-size:14px;color:var(--text2)">/14</span></div><div class="metric-sub">2 offline for service</div></div>
+      <div class="metric-card"><div class="metric-label">Fleet Health</div><div class="metric-val warn">71%</div><div class="metric-sub">↓ 4% this week</div></div>
+      <div class="metric-card"><div class="metric-label">Active Alerts</div><div class="metric-val crit">4</div><div class="metric-sub">1 critical · 3 warnings</div></div>
+      <div class="metric-card"><div class="metric-label">Uptime Today</div><div class="metric-val good">94.2%</div><div class="metric-sub">Target: 95%</div></div>
+    </div>
+
+    <div class="chart-row">
+      <div class="chart-card">
+        <div class="chart-title">Fleet health — last 7 days</div>
+        <div class="chart-wrap" style="height:180px"><canvas id="ov-trend" role="img" aria-label="Fleet health trend"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Fault distribution</div>
+        <div class="chart-wrap" style="height:180px"><canvas id="ov-fault" role="img" aria-label="Fault types"></canvas></div>
+      </div>
+    </div>
+
+    <div class="chart-card" style="margin-bottom:16px">
+      <div class="chart-title">Critical machine M-04 — sensor readings vs safe limits</div>
+      <div class="chart-wrap" style="height:200px"><canvas id="ov-sensor" role="img" aria-label="M04 sensors"></canvas></div>
+    </div>
+
+    <div class="machine-list-card">
+      <div class="chart-title">All machines — health status</div>
+      <div id="ov-machine-list"></div>
+    </div>
+
+    <div style="margin-top:1.5rem">
+      <h3 style="font-size:15px;font-weight:600;margin-bottom:1rem;color:var(--text)">ROI Summary</h3>
+      <div class="roi-grid">
+        <div class="roi-card"><div class="roi-val">7</div><div class="roi-label">Breakdowns prevented</div><div class="roi-sub">since deployment</div></div>
+        <div class="roi-card"><div class="roi-val">142 hrs</div><div class="roi-label">Downtime saved</div><div class="roi-sub">this quarter</div></div>
+        <div class="roi-card"><div class="roi-val">₹2.8L</div><div class="roi-label">Cost saved</div><div class="roi-sub">vs reactive model</div></div>
+        <div class="roi-card"><div class="roi-val">2.3×</div><div class="roi-label">ROI</div><div class="roi-sub">on subscription cost</div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Monthly savings vs subscription cost</div>
+        <div class="chart-wrap" style="height:180px"><canvas id="ov-roi" role="img" aria-label="ROI chart"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY PAGE -->
+<div class="page" id="page-category">
+  <div class="container">
+    <div class="back-btn" onclick="goHome()">← Back to Plant Floor</div>
+    <div class="cat-page-header" id="cat-header"></div>
+    <div class="mach-grid" id="cat-machine-grid"></div>
+  </div>
+</div>
+
+<!-- MACHINE DETAIL PAGE -->
+<div class="page" id="page-machine">
+  <div class="container">
+    <div class="back-btn" id="mach-back-btn">← Back</div>
+    <div class="mach-detail-header" id="mach-header"></div>
+    <div class="sensor-cards" id="mach-sensors"></div>
+
+    <div class="chart-row section">
+      <div class="chart-card">
+        <div class="chart-title">Sensor trend — last 24 hours</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="mach-trend" role="img" aria-label="Sensor trend"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Daily uptime % — last 7 days</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="mach-uptime" role="img" aria-label="Uptime chart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Active Alerts</div>
+      <div id="mach-alerts"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Maintenance Recommendations</div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+        <table class="rec-table"><thead><tr><th>Action</th><th>Est. Cost</th><th>Time</th><th>Priority</th></tr></thead><tbody id="mach-recs"></tbody></table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Fatigue Analysis</div>
+      <div class="fatigue-analysis">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:var(--text2)">Component fatigue score</span>
+          <span id="fatigue-score-label" style="font-size:20px;font-weight:700;font-family:'Space Grotesk',sans-serif"></span>
+        </div>
+        <div class="fatigue-big-bar" id="fatigue-big-bar">
+          <div class="fatigue-pointer" id="fatigue-pointer"></div>
+        </div>
+        <div class="fatigue-zones"><span style="color:var(--green)">Healthy (0–40)</span><span style="color:var(--amber)">Monitor (40–70)</span><span style="color:var(--red)">Critical (70–100)</span></div>
+        <div class="fatigue-prediction" id="fatigue-prediction"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========= DATA =========
+const categories = [
+  {
+    id:'spinning', name:'Spinning', icon:'🧵', desc:'Ring and open-end spinning frames',
+    machines:[
+      {id:'M-01',name:'Ring Frame RF-01',health:88,status:'good',vibration:2.1,temp:52,current:10.2,fatigue:34,lastService:'12 Mar 2025',nextService:'12 Jun 2025',uptime:97.2,alerts:[]},
+      {id:'M-02',name:'Ring Frame RF-02',health:82,status:'good',vibration:2.8,temp:58,current:10.9,fatigue:41,lastService:'1 Mar 2025',nextService:'1 Jun 2025',uptime:96.1,alerts:['Belt inspection due Friday']},
+      {id:'M-03',name:'Open-End OE-01',health:61,status:'warn',vibration:4.1,temp:66,current:12.4,fatigue:68,lastService:'10 Jan 2025',nextService:'Overdue',uptime:88.4,alerts:['Vibration above normal','Service overdue']},
+      {id:'M-04',name:'Open-End OE-02',health:6,status:'critical',vibration:8.7,temp:87,current:12.1,fatigue:94,lastService:'5 Dec 2024',nextService:'Overdue',uptime:61.0,alerts:['CRITICAL: Bearing failure imminent','Temperature critical','Fatigue score 94/100']},
+    ]
+  },
+  {
+    id:'weaving', name:'Weaving', icon:'🪢', desc:'Rapier and projectile looms',
+    machines:[
+      {id:'M-05',name:'Rapier Loom RL-01',health:91,status:'good',vibration:1.8,temp:48,current:9.4,fatigue:22,lastService:'20 Mar 2025',nextService:'20 Jun 2025',uptime:98.1,alerts:[]},
+      {id:'M-06',name:'Rapier Loom RL-02',health:79,status:'good',vibration:3.2,temp:61,current:11.1,fatigue:55,lastService:'14 Feb 2025',nextService:'14 May 2025',uptime:93.7,alerts:['Tension sensor drift — minor']},
+      {id:'M-09',name:'Projectile Loom PL-01',health:52,status:'warn',vibration:3.9,temp:74,current:13.1,fatigue:71,lastService:'22 Nov 2024',nextService:'Overdue',uptime:81.2,alerts:['Overheating detected','Cooling fan RPM drop']},
+    ]
+  },
+  {
+    id:'winding', name:'Winding & Reeling', icon:'🎣', desc:'Cone winding and reeling machines',
+    machines:[
+      {id:'M-07',name:'Cone Winder CW-01',health:85,status:'good',vibration:2.3,temp:54,current:8.7,fatigue:38,lastService:'5 Mar 2025',nextService:'5 Jun 2025',uptime:95.8,alerts:['Belt inspection due Friday']},
+      {id:'M-08',name:'Cone Winder CW-02',health:90,status:'good',vibration:1.9,temp:49,current:8.2,fatigue:29,lastService:'18 Mar 2025',nextService:'18 Jun 2025',uptime:97.5,alerts:[]},
+    ]
+  },
+  {
+    id:'processing', name:'Processing & Finishing', icon:'⚙️', desc:'Dyeing, bleaching and finishing units',
+    machines:[
+      {id:'M-10',name:'Dyeing Unit DU-01',health:76,status:'good',vibration:2.7,temp:63,current:11.8,fatigue:48,lastService:'28 Feb 2025',nextService:'28 May 2025',uptime:92.3,alerts:[]},
+      {id:'M-11',name:'Finishing Unit FU-01',health:61,status:'warn',vibration:3.6,temp:68,current:14.2,fatigue:65,lastService:'15 Jan 2025',nextService:'Overdue',uptime:85.9,alerts:['Current draw anomaly','Lubrication required']},
+      {id:'M-12',name:'Bleaching Unit BU-01',health:94,status:'good',vibration:1.4,temp:44,current:7.9,fatigue:18,lastService:'22 Mar 2025',nextService:'22 Jun 2025',uptime:99.1,alerts:[]},
+    ]
+  }
+];
+
+const allMachines = categories.flatMap(c => c.machines.map(m => ({...m, categoryId:c.id, categoryName:c.name})));
+
+const limits = {vibration:5.0, temp:70, current:13.0, fatigue:80};
+
+const recs = {
+  critical:[
+    {action:'Replace bearing — failure predicted within 48 hours',cost:'₹1,200',time:'2 hrs',pri:'high'},
+    {action:'Full inspection and diagnostic shutdown recommended',cost:'₹500',time:'4 hrs',pri:'high'},
+  ],
+  warn:[
+    {action:'Clean cooling duct and inspect fan motor',cost:'₹300',time:'45 min',pri:'high'},
+    {action:'Lubricate shuttle mechanism',cost:'₹200',time:'30 min',pri:'med'},
+    {action:'Recalibrate tension sensor',cost:'₹150',time:'20 min',pri:'med'},
+  ],
+  good:[
+    {action:'Routine belt inspection (scheduled)',cost:'₹0',time:'30 min',pri:'low'},
+    {action:'Log current readings for baseline update',cost:'₹0',time:'10 min',pri:'low'},
+  ]
+};
+
+// ========= HELPERS =========
+function statusColor(s){return s==='good'?'var(--green)':s==='warn'?'var(--amber)':'var(--red)'}
+function statusLabel(s){return s==='good'?'Healthy':s==='warn'?'Warning':'Critical'}
+function healthColor(h){return h>70?'var(--green)':h>40?'var(--amber)':'var(--red)'}
+function fatigueColor(f){return f<40?'var(--green)':f<70?'var(--amber)':'var(--red)'}
+
+function catBorderClass(cat){
+  if(cat.machines.some(m=>m.status==='critical')) return 'border-crit glow-red';
+  if(cat.machines.some(m=>m.status==='warn')) return 'border-warn';
+  return 'border-good';
+}
+
+function avgHealth(cat){
+  return Math.round(cat.machines.reduce((a,m)=>a+m.health,0)/cat.machines.length);
+}
+
+// ========= CLOCK =========
+setInterval(()=>{
+  const now=new Date();
+  document.getElementById('clock').textContent=now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+},1000);
+
+// ========= PAGES =========
+let currentMachineId = null;
+let currentCategoryId = null;
+let machTrendChart=null, machUptimeChart=null;
+let ovCharts=[];
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  if(id==='home') document.getElementById('tab-home').classList.add('active');
+  if(id==='overview') document.getElementById('tab-overview').classList.add('active');
+}
+
+function setBreadcrumb(crumbs){
+  const bc=document.getElementById('breadcrumb');
+  bc.innerHTML=crumbs.map((c,i)=>{
+    const isLast=i===crumbs.length-1;
+    return (i>0?`<span class="nav-sep">›</span>`:'') +
+      `<span class="nav-crumb${isLast?' active':''}" ${c.onclick?`onclick="${c.onclick}"`:''} style="${isLast?'':'cursor:pointer'}">${c.label}</span>`;
+  }).join('');
+}
+
+function goHome(){
+  showPage('home');
+  setBreadcrumb([{label:'Plant Floor'}]);
+  renderHome();
+}
+
+function goOverview(){
+  showPage('overview');
+  setBreadcrumb([{label:'Plant Floor',onclick:'goHome()'},null,{label:'Overview'}].filter(Boolean));
+  renderOverview();
+}
+
+function goCategory(catId){
+  currentCategoryId=catId;
+  showPage('category');
+  const cat=categories.find(c=>c.id===catId);
+  setBreadcrumb([{label:'Plant Floor',onclick:'goHome()'},{label:cat.name}]);
+  renderCategory(cat);
+}
+
+function goMachine(machId, fromCatId){
+  currentMachineId=machId;
+  const m=allMachines.find(x=>x.id===machId);
+  showPage('machine');
+  const cat=categories.find(c=>c.id===m.categoryId);
+  setBreadcrumb([
+    {label:'Plant Floor',onclick:'goHome()'},
+    {label:cat.name,onclick:`goCategory('${cat.id}')`},
+    {label:m.name}
+  ]);
+  document.getElementById('mach-back-btn').onclick=()=>goCategory(m.categoryId);
+  renderMachine(m);
+}
+
+// ========= HOME RENDER =========
+function renderHome(){
+  const total=allMachines.length;
+  const crit=allMachines.filter(m=>m.status==='critical').length;
+  const warn=allMachines.filter(m=>m.status==='warn').length;
+  const good=allMachines.filter(m=>m.status==='good').length;
+
+  document.getElementById('summary-pills').innerHTML=`
+    <div class="pill pill-total"><span class="pill-dot" style="background:var(--text2)"></span>${total} Total</div>
+    <div class="pill pill-crit"><span class="pill-dot"></span>${crit} Critical</div>
+    <div class="pill pill-warn"><span class="pill-dot"></span>${warn} Warning</div>
+    <div class="pill pill-good"><span class="pill-dot"></span>${good} Healthy</div>
+  `;
+
+  const grid=document.getElementById('cat-grid');
+  grid.innerHTML=categories.map(cat=>{
+    const avg=avgHealth(cat);
+    const critCount=cat.machines.filter(m=>m.status==='critical').length;
+    const warnCount=cat.machines.filter(m=>m.status==='warn').length;
+    const goodCount=cat.machines.filter(m=>m.status==='good').length;
+    const fillColor=critCount>0?'var(--red)':warnCount>0?'var(--amber)':'var(--green)';
+    return `<div class="cat-card ${catBorderClass(cat)}" onclick="goCategory('${cat.id}')">
+      <span class="cat-icon">${cat.icon}</span>
+      <div class="cat-name">${cat.name}</div>
+      <div class="cat-desc">${cat.desc}</div>
+      <div class="cat-footer">
+        <span class="cat-count">${cat.machines.length} machines</span>
+        <div class="cat-status-row">
+          ${goodCount>0?`<div class="cat-status-item" style="color:var(--green)"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span>${goodCount} ok</div>`:''}
+          ${warnCount>0?`<div class="cat-status-item" style="color:var(--amber)"><span style="width:6px;height:6px;border-radius:50%;background:var(--amber);display:inline-block"></span>${warnCount} warn</div>`:''}
+          ${critCount>0?`<div class="cat-status-item" style="color:var(--red)"><span style="width:6px;height:6px;border-radius:50%;background:var(--red);display:inline-block"></span>${critCount} crit</div>`:''}
+        </div>
+      </div>
+      <div class="cat-health-bar"><div class="cat-health-fill" style="width:${avg}%;background:${fillColor}"></div></div>
+      <div style="font-size:10px;color:var(--text3);margin-top:4px;text-align:right">Avg health: ${avg}%</div>
+    </div>`;
+  }).join('');
+
+  const alertsStrip=document.getElementById('alerts-strip');
+  const recentAlerts=allMachines.filter(m=>m.alerts.length>0).flatMap(m=>m.alerts.map(a=>({text:a,machine:m.id,sev:m.status})));
+  alertsStrip.innerHTML=recentAlerts.slice(0,6).map(a=>`
+    <div class="alert-chip ${a.sev==='critical'?'crit':'warn'}">
+      <span>${a.sev==='critical'?'⚠':'●'}</span>
+      <span>${a.machine}: ${a.text}</span>
+    </div>`).join('');
+}
+
+// ========= OVERVIEW RENDER =========
+function renderOverview(){
+  ovCharts.forEach(c=>{try{c.destroy()}catch(e){}});
+  ovCharts=[];
+
+  const c1=new Chart(document.getElementById('ov-trend'),{
+    type:'line',
+    data:{labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],datasets:[{label:'Fleet health %',data:[84,83,80,78,77,75,71],borderColor:'rgb(120,100,255)',backgroundColor:'rgba(120,100,255,0.08)',tension:0.4,fill:true,pointRadius:4,pointBackgroundColor:'rgb(120,100,255)',borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:60,max:100,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#8b90a0',font:{size:10}}},x:{grid:{display:false},ticks:{color:'#8b90a0',font:{size:10}}}}}
+  });
+  ovCharts.push(c1);
+
+  const c2=new Chart(document.getElementById('ov-fault'),{
+    type:'doughnut',
+    data:{labels:['Vibration','Overheating','Current anomaly','Belt wear'],datasets:[{data:[38,27,21,14],backgroundColor:['rgb(255,75,80)','rgb(255,180,50)','rgb(60,160,255)','rgb(50,210,130)'],borderWidth:0,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'right',labels:{color:'#8b90a0',font:{size:11},boxWidth:10,padding:8}}}}
+  });
+  ovCharts.push(c2);
+
+  const c3=new Chart(document.getElementById('ov-sensor'),{
+    type:'bar',
+    data:{
+      labels:['Vibration (mm/s)','Temperature (°C)','Current (A)','Fatigue Score'],
+      datasets:[
+        {label:'Current reading',data:[8.7,87,12.1,94],backgroundColor:['rgba(255,75,80,0.8)','rgba(255,75,80,0.8)','rgba(255,180,50,0.8)','rgba(255,75,80,0.8)'],borderRadius:4},
+        {label:'Safe limit',data:[5.0,70,13.0,80],backgroundColor:'rgba(255,255,255,0.08)',borderRadius:4}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8b90a0',font:{size:10},boxWidth:10}}},scales:{y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#8b90a0',font:{size:10}}},x:{grid:{display:false},ticks:{color:'#8b90a0',font:{size:10}}}}}
+  });
+  ovCharts.push(c3);
+
+  const c4=new Chart(document.getElementById('ov-roi'),{
+    type:'bar',
+    data:{
+      labels:['Oct','Nov','Dec','Jan','Feb','Mar'],
+      datasets:[
+        {label:'Savings (₹K)',data:[6,9,12,14,13,15],backgroundColor:'rgba(50,210,130,0.75)',borderRadius:4},
+        {label:'Cost (₹K)',data:[5.7,5.7,5.7,5.7,5.7,5.7],backgroundColor:'rgba(255,255,255,0.08)',borderRadius:4}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8b90a0',font:{size:10},boxWidth:10}}},scales:{y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#8b90a0',font:{size:10},callback:v=>'₹'+v+'K'}},x:{grid:{display:false},ticks:{color:'#8b90a0',font:{size:10}}}}}
+  });
+  ovCharts.push(c4);
+
+  const list=document.getElementById('ov-machine-list');
+  list.innerHTML=allMachines.map(m=>`
+    <div class="machine-list-row" onclick="goMachine('${m.id}')">
+      <div class="m-dot" style="background:${statusColor(m.status)}"></div>
+      <div class="m-info"><div class="m-name">${m.name}</div><div class="m-type">${m.categoryName}</div></div>
+      <div class="m-bar-wrap"><div class="m-bar" style="width:${m.health}%;background:${healthColor(m.health)}"></div></div>
+      <div class="m-pct" style="color:${healthColor(m.health)}">${m.health}%</div>
+    </div>`).join('');
+}
+
+// ========= CATEGORY RENDER =========
+function renderCategory(cat){
+  const avg=avgHealth(cat);
+  const critC=cat.machines.filter(m=>m.status==='critical').length;
+  const alertC=cat.machines.reduce((a,m)=>a+m.alerts.length,0);
+
+  document.getElementById('cat-header').innerHTML=`
+    <div class="cat-page-icon">${cat.icon}</div>
+    <div>
+      <div class="cat-page-title">${cat.name}</div>
+      <div class="cat-page-desc">${cat.desc}</div>
+      <div class="cat-meta-pills">
+        <span class="meta-pill">${cat.machines.length} machines</span>
+        <span class="meta-pill" style="color:${avg>70?'var(--green)':avg>40?'var(--amber)':'var(--red)'}">Avg health: ${avg}%</span>
+        ${alertC>0?`<span class="meta-pill" style="color:var(--red)">${alertC} active alerts</span>`:'<span class="meta-pill" style="color:var(--green)">No critical alerts</span>'}
+      </div>
+    </div>
+  `;
+
+  document.getElementById('cat-machine-grid').innerHTML=cat.machines.map(m=>`
+    <div class="mach-card ${m.status}" onclick="goMachine('${m.id}')">
+      <div class="mach-card-top">
+        <span class="mach-id">${m.id}</span>
+        <span class="status-badge ${m.status}">${statusLabel(m.status)}</span>
+      </div>
+      <div class="mach-name">${m.name}</div>
+      <div class="mach-health-big" style="color:${healthColor(m.health)}">${m.health}%</div>
+      <div class="mach-bar-wrap"><div class="mach-bar" style="width:${m.health}%;background:${healthColor(m.health)}"></div></div>
+      <div class="sensor-pills">
+        <span class="sensor-pill">📳 ${m.vibration} mm/s</span>
+        <span class="sensor-pill">🌡 ${m.temp}°C</span>
+        <span class="sensor-pill">⚡ ${m.current}A</span>
+      </div>
+      <div class="fatigue-row">
+        <div class="fatigue-label"><span>Fatigue</span><span style="color:${fatigueColor(m.fatigue)}">${m.fatigue}/100</span></div>
+        <div class="fatigue-bar-wrap"><div class="fatigue-bar" style="width:${m.fatigue}%;background:${fatigueColor(m.fatigue)}"></div></div>
+      </div>
+      <div class="mach-card-footer">
+        ${m.alerts.length>0?`<span class="alert-badge">⚠ ${m.alerts.length} alert${m.alerts.length>1?'s':''}</span>`:'<span style="font-size:11px;color:var(--green)">✓ No alerts</span>'}
+        <span class="view-btn">View analytics →</span>
+      </div>
+    </div>`).join('');
+}
+
+// ========= MACHINE RENDER =========
+function renderMachine(m){
+  if(machTrendChart){try{machTrendChart.destroy()}catch(e){}}
+  if(machUptimeChart){try{machUptimeChart.destroy()}catch(e){}}
+
+  document.getElementById('mach-header').innerHTML=`
+    <div class="mach-detail-title-row">
+      <div class="mach-detail-title">${m.name}</div>
+      <span class="mach-id">${m.id}</span>
+      <span class="status-badge ${m.status}">${statusLabel(m.status)}</span>
+    </div>
+    <div class="info-pills-row">
+      <div class="info-pill">Last service: <strong>${m.lastService}</strong></div>
+      <div class="info-pill">Next service: <strong style="color:${m.nextService==='Overdue'?'var(--red)':'var(--text)'}">${m.nextService}</strong></div>
+      <div class="info-pill">Uptime today: <strong style="color:${m.uptime>90?'var(--green)':m.uptime>80?'var(--amber)':'var(--red)'}">${m.uptime}%</strong></div>
+    </div>
+  `;
+
+  const sensors=[
+    {label:'Vibration',val:m.vibration,unit:'mm/s',limit:limits.vibration},
+    {label:'Temperature',val:m.temp,unit:'°C',limit:limits.temp},
+    {label:'Current draw',val:m.current,unit:'A',limit:limits.current},
+    {label:'Fatigue score',val:m.fatigue,unit:'/100',limit:limits.fatigue},
+  ];
+  document.getElementById('mach-sensors').innerHTML=sensors.map(s=>{
+    const pct=Math.min(100,Math.round((s.val/s.limit)*100));
+    const sc=pct>100?'crit':pct>80?'warn':'good';
+    const col=sc==='good'?'var(--green)':sc==='warn'?'var(--amber)':'var(--red)';
+    return `<div class="sensor-card ${sc}">
+      <div class="sensor-card-label">${s.label}</div>
+      <div class="sensor-card-val" style="color:${col}">${s.val}</div>
+      <div class="sensor-card-unit">${s.unit}</div>
+      <div class="sensor-card-limit">Limit: ${s.limit}${s.unit}</div>
+      <div class="sensor-prog-wrap"><div class="sensor-prog" style="width:${Math.min(100,pct)}%;background:${col}"></div></div>
+    </div>`;
+  }).join('');
+
+  // Generate 24hr trend
+  const hours=Array.from({length:24},(_,i)=>`${i}:00`);
+  const trendVib=hours.map((_,i)=>{
+    if(m.status==='critical') return +(m.vibration * (0.55 + 0.45*(i/23)) + (Math.random()-0.5)*0.3).toFixed(1);
+    return +(m.vibration + (Math.random()-0.5)*0.6).toFixed(1);
+  });
+  const trendTemp=hours.map((_,i)=>{
+    if(m.status==='critical') return Math.round(m.temp * (0.75 + 0.25*(i/23)) + (Math.random()-0.5)*2);
+    return Math.round(m.temp + (Math.random()-0.5)*4);
+  });
+
+  machTrendChart=new Chart(document.getElementById('mach-trend'),{
+    type:'line',
+    data:{
+      labels:hours.filter((_,i)=>i%4===0),
+      datasets:[
+        {label:'Vibration (mm/s)',data:trendVib.filter((_,i)=>i%4===0),borderColor:'rgb(255,75,80)',backgroundColor:'rgba(255,75,80,0.05)',tension:0.4,yAxisID:'y',pointRadius:2,borderWidth:2},
+        {label:'Temp (°C)',data:trendTemp.filter((_,i)=>i%4===0),borderColor:'rgb(255,180,50)',backgroundColor:'rgba(255,180,50,0.05)',tension:0.4,yAxisID:'y1',pointRadius:2,borderWidth:2}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8b90a0',font:{size:10},boxWidth:10}}},scales:{
+      y:{position:'left',grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#8b90a0',font:{size:10}}},
+      y1:{position:'right',grid:{display:false},ticks:{color:'#8b90a0',font:{size:10}}},
+      x:{grid:{display:false},ticks:{color:'#8b90a0',font:{size:10}}}
+    }}
+  });
+
+  // Uptime 7 days
+  const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const uptimeData=days.map((_,i)=>{
+    if(m.status==='critical') return Math.max(55, Math.round(m.uptime * (1 + 0.06*(1-i/6)) + (Math.random()-0.5)*3));
+    if(m.status==='warn') return Math.round(m.uptime + (Math.random()-0.5)*5);
+    return Math.min(100, Math.round(m.uptime + (Math.random()-0.5)*2));
+  });
+
+  machUptimeChart=new Chart(document.getElementById('mach-uptime'),{
+    type:'bar',
+    data:{labels:days,datasets:[{label:'Uptime %',data:uptimeData,backgroundColor:uptimeData.map(v=>v>90?'rgba(50,210,130,0.7)':v>80?'rgba(255,180,50,0.7)':'rgba(255,75,80,0.7)'),borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:50,max:100,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#8b90a0',font:{size:10},callback:v=>v+'%'}},x:{grid:{display:false},ticks:{color:'#8b90a0',font:{size:10}}}}}
+  });
+
+  // Alerts
+  const alertsEl=document.getElementById('mach-alerts');
+  if(m.alerts.length===0){
+    alertsEl.innerHTML=`<div class="no-alerts"><span>✓</span> All systems normal — no active alerts</div>`;
+  } else {
+    alertsEl.innerHTML=m.alerts.map(a=>{
+      const isCrit=a.toLowerCase().includes('critical')||a.toLowerCase().includes('failure');
+      return `<div class="alert-list-item ${isCrit?'crit':'warn'}">
+        <span class="alert-icon">${isCrit?'⚠':'●'}</span>
+        <div><div class="alert-text">${a}</div><div class="alert-sub">${m.id} · ${new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div></div>
+      </div>`;
+    }).join('');
+  }
+
+  // Recommendations
+  const recList=m.status==='critical'?recs.critical:m.status==='warn'?recs.warn:recs.good;
+  document.getElementById('mach-recs').innerHTML=recList.map(r=>`
+    <tr>
+      <td>${r.action}</td>
+      <td>${r.cost}</td>
+      <td>${r.time}</td>
+      <td><span class="pri-badge pri-${r.pri}">${r.pri}</span></td>
+    </tr>`).join('');
+
+  // Fatigue
+  document.getElementById('fatigue-score-label').textContent=`${m.fatigue}/100`;
+  document.getElementById('fatigue-score-label').style.color=fatigueColor(m.fatigue);
+  document.getElementById('fatigue-pointer').style.left=`${m.fatigue}%`;
+  document.getElementById('fatigue-pointer').setAttribute('data-val',`${m.fatigue}`);
+  const pred=m.fatigue>90?'⚠ Estimated time to failure: < 48 hours — immediate action required':
+    m.fatigue>70?'⏱ Estimated time to service: 1–2 weeks — schedule maintenance soon':
+    '✓ On schedule — next service as planned';
+  const predCol=m.fatigue>90?'var(--red)':m.fatigue>70?'var(--amber)':'var(--green)';
+  document.getElementById('fatigue-prediction').innerHTML=`<strong style="color:${predCol}">${pred}</strong>`;
+
+  // Real-time simulation
+  clearInterval(window._liveInterval);
+  window._liveInterval=setInterval(()=>{
+    const cards=document.querySelectorAll('.sensor-card-val');
+    if(cards.length<2) return;
+    const newVib=Math.max(0.5,(m.vibration+(Math.random()-0.5)*0.4)).toFixed(1);
+    const newTemp=Math.round(m.temp+(Math.random()-0.5)*2);
+    cards[0].textContent=newVib;
+    cards[1].textContent=newTemp;
+  },5000);
+}
+
+// ========= INIT =========
+Chart.defaults.color='#8b90a0';
+goHome();
+</script>
+</body>
+</html>
