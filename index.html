@@ -8,6 +8,35 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
+  --bg: #f4f5f7;
+  --bg2: #ffffff;
+  --bg3: #eef0f4;
+  --bg4: #e2e5ec;
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.14);
+  --text: #12141a;
+  --text2: #5a5f72;
+  --text3: #9499aa;
+  --purple: rgb(100,80,230);
+  --purple2: rgb(75,55,200);
+  --purple-dim: rgba(100,80,230,0.1);
+  --green: rgb(22,168,96);
+  --green-dim: rgba(22,168,96,0.1);
+  --amber: rgb(210,140,10);
+  --amber-dim: rgba(210,140,10,0.1);
+  --red: rgb(220,45,50);
+  --red-dim: rgba(220,45,50,0.1);
+  --blue: rgb(30,130,220);
+  --blue-dim: rgba(30,130,220,0.1);
+  --teal: rgb(15,170,160);
+  --teal-dim: rgba(15,170,160,0.1);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 5px;
+  --nav-bg: rgba(244,245,247,0.94);
+  --shadow: 0 1px 3px rgba(0,0,0,0.08),0 4px 12px rgba(0,0,0,0.05);
+}
+html.dark {
   --bg: #0a0b0f;
   --bg2: #111318;
   --bg3: #191c24;
@@ -30,9 +59,8 @@
   --blue-dim: rgba(60,160,255,0.12);
   --teal: rgb(30,210,200);
   --teal-dim: rgba(30,210,200,0.1);
-  --radius: 12px;
-  --radius-sm: 8px;
-  --radius-xs: 5px;
+  --nav-bg: rgba(10,11,15,0.92);
+  --shadow: none;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
@@ -44,7 +72,7 @@ h1,h2,h3,.mono{font-family:'Space Grotesk',sans-serif}
 ::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px}
 
 /* NAV */
-nav{position:sticky;top:0;z-index:100;background:rgba(10,11,15,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 2rem;height:58px;display:flex;align-items:center;justify-content:space-between}
+nav{position:sticky;top:0;z-index:100;background:var(--nav-bg);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 2rem;height:58px;display:flex;align-items:center;justify-content:space-between}
 .nav-logo{display:flex;align-items:center;gap:10px;cursor:pointer}
 .nav-logo-mark{width:30px;height:30px;background:linear-gradient(135deg,rgb(120,100,255),rgb(60,160,255));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;color:#fff}
 .nav-logo-text{font-size:17px;font-weight:600;font-family:'Space Grotesk',sans-serif;color:var(--text)}
@@ -112,7 +140,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,11,15,0.92);backdrop-fi
 
 /* METRIC CARDS */
 .metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem}
-.metric-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem}
+.metric-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;box-shadow:var(--shadow)}
 .metric-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:6px}
 .metric-val{font-size:26px;font-weight:700;font-family:'Space Grotesk',sans-serif;line-height:1}
 .metric-sub{font-size:11px;color:var(--text3);margin-top:4px}
@@ -248,7 +276,12 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,11,15,0.92);backdrop-fi
 .back-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--text2);cursor:pointer;padding:6px 12px;border-radius:var(--radius-xs);border:1px solid var(--border);background:var(--bg2);transition:all 0.15s;margin-bottom:1rem}
 .back-btn:hover{color:var(--text);border-color:var(--border2)}
 
-/* GLOW EFFECTS */
+/* THEME TOGGLE */
+.theme-toggle{display:flex;align-items:center;gap:0;border-radius:20px;border:1px solid var(--border2);overflow:hidden;background:var(--bg3)}
+.theme-btn{font-size:12px;padding:5px 11px;cursor:pointer;border:none;background:transparent;color:var(--text2);transition:all 0.15s;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:4px}
+.theme-btn.active{background:var(--bg2);color:var(--text);font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.theme-btn:hover:not(.active){color:var(--text)}
+
 .glow-red{box-shadow:0 0 20px rgba(255,75,80,0.15)}
 .glow-green{box-shadow:0 0 20px rgba(50,210,130,0.1)}
 </style>
@@ -268,6 +301,10 @@ nav{position:sticky;top:0;z-index:100;background:rgba(10,11,15,0.92);backdrop-fi
     <div class="nav-tabs">
       <button class="nav-tab active" id="tab-home" onclick="goHome()">Home</button>
       <button class="nav-tab" id="tab-overview" onclick="goOverview()">Overview</button>
+    </div>
+    <div class="theme-toggle">
+      <button class="theme-btn active" id="btn-light" onclick="setTheme('light')">☀ Light</button>
+      <button class="theme-btn" id="btn-dark" onclick="setTheme('dark')">☾ Dark</button>
     </div>
     <div class="live-badge"><div class="live-dot"></div>Live</div>
     <div class="nav-time" id="clock">--:--:--</div>
@@ -588,17 +625,21 @@ function renderOverview(){
   ovCharts.forEach(c=>{try{c.destroy()}catch(e){}});
   ovCharts=[];
 
+  const isDark=document.documentElement.classList.contains('dark');
+  const tc=isDark?'#8b90a0':'#5a5f72';
+  const gc=isDark?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.06)';
+
   const c1=new Chart(document.getElementById('ov-trend'),{
     type:'line',
     data:{labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],datasets:[{label:'Fleet health %',data:[84,83,80,78,77,75,71],borderColor:'rgb(120,100,255)',backgroundColor:'rgba(120,100,255,0.08)',tension:0.4,fill:true,pointRadius:4,pointBackgroundColor:'rgb(120,100,255)',borderWidth:2}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:60,max:100,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#8b90a0',font:{size:10}}},x:{grid:{display:false},ticks:{color:'#8b90a0',font:{size:10}}}}}
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:60,max:100,grid:{color:gc},ticks:{color:tc,font:{size:10}}},x:{grid:{display:false},ticks:{color:tc,font:{size:10}}}}}
   });
   ovCharts.push(c1);
 
   const c2=new Chart(document.getElementById('ov-fault'),{
     type:'doughnut',
     data:{labels:['Vibration','Overheating','Current anomaly','Belt wear'],datasets:[{data:[38,27,21,14],backgroundColor:['rgb(255,75,80)','rgb(255,180,50)','rgb(60,160,255)','rgb(50,210,130)'],borderWidth:0,hoverOffset:6}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'right',labels:{color:'#8b90a0',font:{size:11},boxWidth:10,padding:8}}}}
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'right',labels:{color:tc,font:{size:11},boxWidth:10,padding:8}}}}
   });
   ovCharts.push(c2);
 
@@ -608,10 +649,10 @@ function renderOverview(){
       labels:['Vibration (mm/s)','Temperature (°C)','Current (A)','Fatigue Score'],
       datasets:[
         {label:'Current reading',data:[8.7,87,12.1,94],backgroundColor:['rgba(255,75,80,0.8)','rgba(255,75,80,0.8)','rgba(255,180,50,0.8)','rgba(255,75,80,0.8)'],borderRadius:4},
-        {label:'Safe limit',data:[5.0,70,13.0,80],backgroundColor:'rgba(255,255,255,0.08)',borderRadius:4}
+        {label:'Safe limit',data:[5.0,70,13.0,80],backgroundColor:isDark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.08)',borderRadius:4}
       ]
     },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8b90a0',font:{size:10},boxWidth:10}}},scales:{y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#8b90a0',font:{size:10}}},x:{grid:{display:false},ticks:{color:'#8b90a0',font:{size:10}}}}}
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:{size:10},boxWidth:10}}},scales:{y:{grid:{color:gc},ticks:{color:tc,font:{size:10}}},x:{grid:{display:false},ticks:{color:tc,font:{size:10}}}}}
   });
   ovCharts.push(c3);
 
@@ -621,10 +662,10 @@ function renderOverview(){
       labels:['Oct','Nov','Dec','Jan','Feb','Mar'],
       datasets:[
         {label:'Savings (₹K)',data:[6,9,12,14,13,15],backgroundColor:'rgba(50,210,130,0.75)',borderRadius:4},
-        {label:'Cost (₹K)',data:[5.7,5.7,5.7,5.7,5.7,5.7],backgroundColor:'rgba(255,255,255,0.08)',borderRadius:4}
+        {label:'Cost (₹K)',data:[5.7,5.7,5.7,5.7,5.7,5.7],backgroundColor:isDark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.08)',borderRadius:4}
       ]
     },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8b90a0',font:{size:10},boxWidth:10}}},scales:{y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#8b90a0',font:{size:10},callback:v=>'₹'+v+'K'}},x:{grid:{display:false},ticks:{color:'#8b90a0',font:{size:10}}}}}
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:{size:10},boxWidth:10}}},scales:{y:{grid:{color:gc},ticks:{color:tc,font:{size:10},callback:v=>'₹'+v+'K'}},x:{grid:{display:false},ticks:{color:tc,font:{size:10}}}}}
   });
   ovCharts.push(c4);
 
@@ -739,11 +780,7 @@ function renderMachine(m){
         {label:'Temp (°C)',data:trendTemp.filter((_,i)=>i%4===0),borderColor:'rgb(255,180,50)',backgroundColor:'rgba(255,180,50,0.05)',tension:0.4,yAxisID:'y1',pointRadius:2,borderWidth:2}
       ]
     },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8b90a0',font:{size:10},boxWidth:10}}},scales:{
-      y:{position:'left',grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#8b90a0',font:{size:10}}},
-      y1:{position:'right',grid:{display:false},ticks:{color:'#8b90a0',font:{size:10}}},
-      x:{grid:{display:false},ticks:{color:'#8b90a0',font:{size:10}}}
-    }}
+    options:(()=>{const d=document.documentElement.classList.contains('dark');const tc=d?'#8b90a0':'#5a5f72';const gc=d?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.06)';return{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:tc,font:{size:10},boxWidth:10}}},scales:{y:{position:'left',grid:{color:gc},ticks:{color:tc,font:{size:10}}},y1:{position:'right',grid:{display:false},ticks:{color:tc,font:{size:10}}},x:{grid:{display:false},ticks:{color:tc,font:{size:10}}}}};})()
   });
 
   // Uptime 7 days
@@ -757,7 +794,7 @@ function renderMachine(m){
   machUptimeChart=new Chart(document.getElementById('mach-uptime'),{
     type:'bar',
     data:{labels:days,datasets:[{label:'Uptime %',data:uptimeData,backgroundColor:uptimeData.map(v=>v>90?'rgba(50,210,130,0.7)':v>80?'rgba(255,180,50,0.7)':'rgba(255,75,80,0.7)'),borderRadius:4}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:50,max:100,grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#8b90a0',font:{size:10},callback:v=>v+'%'}},x:{grid:{display:false},ticks:{color:'#8b90a0',font:{size:10}}}}}
+    options:(()=>{const d=document.documentElement.classList.contains('dark');const tc=d?'#8b90a0':'#5a5f72';const gc=d?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.06)';return{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:50,max:100,grid:{color:gc},ticks:{color:tc,font:{size:10},callback:v=>v+'%'}},x:{grid:{display:false},ticks:{color:tc,font:{size:10}}}}};})()
   });
 
   // Alerts
@@ -807,8 +844,42 @@ function renderMachine(m){
   },5000);
 }
 
+// ========= THEME =========
+function setTheme(mode){
+  const html=document.documentElement;
+  if(mode==='dark'){html.classList.add('dark')}else{html.classList.remove('dark')}
+  document.getElementById('btn-light').classList.toggle('active',mode==='light');
+  document.getElementById('btn-dark').classList.toggle('active',mode==='dark');
+  const tickColor=mode==='dark'?'#8b90a0':'#5a5f72';
+  const gridColor=mode==='dark'?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.06)';
+  Chart.defaults.color=tickColor;
+  // re-render charts on the active page
+  ovCharts.forEach(c=>{
+    if(!c) return;
+    try{
+      c.options.scales&&Object.values(c.options.scales).forEach(s=>{
+        if(s.ticks) s.ticks.color=tickColor;
+        if(s.grid) s.grid.color=gridColor;
+      });
+      if(c.options.plugins?.legend?.labels) c.options.plugins.legend.labels.color=tickColor;
+      c.update();
+    }catch(e){}
+  });
+  [machTrendChart,machUptimeChart].forEach(c=>{
+    if(!c) return;
+    try{
+      c.options.scales&&Object.values(c.options.scales).forEach(s=>{
+        if(s.ticks) s.ticks.color=tickColor;
+        if(s.grid) s.grid.color=gridColor;
+      });
+      if(c.options.plugins?.legend?.labels) c.options.plugins.legend.labels.color=tickColor;
+      c.update();
+    }catch(e){}
+  });
+}
+
 // ========= INIT =========
-Chart.defaults.color='#8b90a0';
+Chart.defaults.color='#5a5f72';
 goHome();
 </script>
 </body>
